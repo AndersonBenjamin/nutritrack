@@ -1,0 +1,26 @@
+# Dependências e build
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Uploads locais (logos de teste — apps/api/uploads)
+uploads/
+
+# Rascunhos locais (não versionados)
+scratch/
+*.local.md
