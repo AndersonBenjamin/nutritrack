@@ -1,0 +1,26 @@
+services:
+  # Produção: build estático servido pelo nginx em http://localhost:8091
+  app:
+    build: .
+    ports:
+      - "8091:80"
+    restart: unless-stopped
+
+  # Desenvolvimento com hot reload em http://localhost:5173
+  # Uso: docker compose --profile dev up dev
+  dev:
+    profiles: ["dev"]
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      # Necessário para o file watching funcionar com volumes no Windows/macOS
+      - CHOKIDAR_USEPOLLING=true
+
+volumes:
+  node_modules:

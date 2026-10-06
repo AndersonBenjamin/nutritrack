@@ -12,6 +12,13 @@ npm run build    # gera a versão de produção em dist/
 
 Para abrir no celular na mesma rede: `npm run dev -- --host` e acesse o IP mostrado no terminal.
 
+### Com Docker
+
+```bash
+docker compose up -d --build              # produção (nginx) em http://localhost:8091
+docker compose --profile dev up dev       # desenvolvimento com hot reload em http://localhost:5173
+```
+
 ## Telas
 
 - **Login** e **Cadastro** — contas salvas no próprio navegador (localStorage), com senha em hash SHA-256.
