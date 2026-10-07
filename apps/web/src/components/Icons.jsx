@@ -88,3 +88,18 @@ export const ArrowIcon = make(<path d="M5 12h14M13 6l6 6-6 6" />);
 export const SparkIcon = make(
   <path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z" />
 );
+export const PillIcon = make(
+  <>
+    <rect x="3.5" y="8.5" width="17" height="7" rx="3.5" transform="rotate(-45 12 12)" />
+    <path d="M9.5 9.5l5 5" />
+  </>
+);
+export const CalendarIcon = make(
+  <>
+    <rect x="4" y="5.5" width="16" height="15" rx="3" />
+    <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" />
+  </>
+);
+export const ChevronLeftIcon = make(<path d="M14.5 6l-6 6 6 6" />);
+export const ChevronRightIcon = make(<path d="M9.5 6l6 6-6 6" />);
+export const CloseIcon = make(<path d="M6 6l12 12M18 6L6 18" />);

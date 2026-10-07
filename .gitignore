@@ -24,3 +24,6 @@ uploads/
 # Rascunhos locais (não versionados)
 scratch/
 *.local.md
+
+# Prisma Client gerado (recriado no build)
+apps/api/src/generated/

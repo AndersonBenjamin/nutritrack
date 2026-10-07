@@ -1,0 +1,19 @@
+# Desenvolvimento: sobe só o Postgres, exposto em localhost:5432.
+# A API e o frontend rodam fora do Docker (npm run dev), com hot reload.
+#   docker compose -f docker-compose.dev.yml up -d
+name: nutritrack-dev
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nutrio
+      POSTGRES_USER: nutrio
+      POSTGRES_PASSWORD: nutrio
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+
+volumes:
+  pgdata-dev:

@@ -1,0 +1,153 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  // Fuso usado para saber qual é o "dia de hoje" do usuário
+  timezone     String   @default("America/Sao_Paulo")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  sessions   Session[]
+  routines   Routine[]
+  logs       RoutineLog[]
+  waterGoals WaterGoal[]
+  waterLogs  WaterLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  // Apenas o hash SHA-256 do token fica no banco; o token em si só existe no cookie
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+enum RoutineKind {
+  MEAL
+  MEDICATION
+}
+
+// Item planejado: uma refeição da dieta ou um horário de remédios/vitaminas
+model Routine {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @map("user_id") @db.Uuid
+  kind       RoutineKind
+  name       String
+  time       String // HH:MM
+  notes      String?
+  // Planejado nos dias em que activeFrom <= dia < archivedOn
+  activeFrom DateTime    @map("active_from") @db.Date
+  archivedOn DateTime?   @map("archived_on") @db.Date
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items RoutineItem[]
+  logs  RoutineLog[]
+
+  @@index([userId, kind])
+  @@map("routines")
+}
+
+model RoutineItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  routineId String  @map("routine_id") @db.Uuid
+  position  Int
+  name      String
+  quantity  Float?
+  unit      String?
+  kcal      Float?
+  proteinG  Float?  @map("protein_g")
+  carbsG    Float?  @map("carbs_g")
+  fatG      Float?  @map("fat_g")
+
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@index([routineId])
+  @@map("routine_items")
+}
+
+// O que foi efetivamente consumido/tomado. Guarda uma cópia dos dados,
+// então editar ou remover o plano não altera o histórico.
+model RoutineLog {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  routineId String?     @map("routine_id") @db.Uuid
+  kind      RoutineKind
+  date      DateTime    @db.Date
+  name      String
+  time      String
+  loggedAt  DateTime    @default(now()) @map("logged_at")
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  items   RoutineLogItem[]
+
+  @@unique([userId, routineId, date])
+  @@index([userId, date])
+  @@map("routine_logs")
+}
+
+model RoutineLogItem {
+  id       String  @id @default(uuid()) @db.Uuid
+  logId    String  @map("log_id") @db.Uuid
+  position Int
+  name     String
+  quantity Float?
+  unit     String?
+  kcal     Float?
+  proteinG Float?  @map("protein_g")
+  carbsG   Float?  @map("carbs_g")
+  fatG     Float?  @map("fat_g")
+
+  log RoutineLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+
+  @@index([logId])
+  @@map("routine_log_items")
+}
+
+// Histórico da meta de água: vale a partir de effectiveFrom até a próxima alteração
+model WaterGoal {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  goalMl        Int      @map("goal_ml")
+  cupMl         Int      @map("cup_ml")
+  effectiveFrom DateTime @map("effective_from") @db.Date
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, effectiveFrom])
+  @@map("water_goals")
+}
+
+model WaterLog {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  date     DateTime @db.Date
+  amountMl Int      @map("amount_ml")
+  loggedAt DateTime @default(now()) @map("logged_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("water_logs")
+}
