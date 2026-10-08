@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { fmt } from '../lib/utils';
 import RoutineEditor, { fromEditRoutines, toEditRoutines } from '../components/RoutineEditor';
-import { PlusIcon, MinusIcon, DropIcon, CheckIcon } from '../components/Icons';
+import { PlusIcon, MinusIcon, DropIcon, CheckIcon, SparkIcon, ChevronRightIcon } from '../components/Icons';
 
 const CUP_SIZES = [200, 250, 300, 500];
 
-export default function Plan({ onSaved }) {
+export default function Plan({ onSaved, onOpenAiDiet }) {
   const [meals, setMeals] = useState(null);
   const [water, setWater] = useState(null);
   const [error, setError] = useState('');
@@ -75,6 +75,17 @@ export default function Plan({ onSaved }) {
             </div>
             <p className="water-hint">≈ {Math.ceil(water.goalMl / water.cupMl)} copos por dia</p>
           </section>
+
+          <button className="ai-cta" onClick={onOpenAiDiet}>
+            <span className="water-icon">
+              <SparkIcon size={20} />
+            </span>
+            <span>
+              <strong>Gere sua dieta em segundos</strong>
+              <small>O assistente monta o cardápio a partir do seu peso, altura e objetivo</small>
+            </span>
+            <ChevronRightIcon size={18} />
+          </button>
 
           <div className="section-head">
             <h2>Refeições</h2>

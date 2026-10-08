@@ -1264,6 +1264,274 @@ p {
   }
 }
 
+/* ---------- Dieta com IA ---------- */
+.ai-cta {
+  width: 100%;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  /* Degradê largo que se desloca devagar, mudando o tom aos poucos */
+  background: linear-gradient(120deg, rgba(255, 194, 61, 0.22), rgba(238, 138, 0, 0.1), rgba(255, 107, 91, 0.16), rgba(255, 194, 61, 0.22));
+  background-size: 300% 300%;
+  border: 1px solid rgba(255, 194, 61, 0.35);
+  text-align: left;
+  color: var(--yellow);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation:
+    ctaGradient 7s ease-in-out infinite,
+    ctaGlow 2.8s ease-in-out infinite;
+}
+/* Reflexo de luz que atravessa o botão de tempos em tempos */
+.ai-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.14) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: ctaShine 4.5s ease-in-out infinite;
+}
+.ai-cta .water-icon {
+  animation: ctaIcon 2.8s ease-in-out infinite;
+}
+
+@keyframes ctaGradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes ctaGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 194, 61, 0);
+    border-color: rgba(255, 194, 61, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 22px -4px rgba(255, 194, 61, 0.45);
+    border-color: rgba(255, 194, 61, 0.65);
+  }
+}
+@keyframes ctaShine {
+  0%,
+  55% {
+    transform: translateX(-100%);
+  }
+  85%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes ctaIcon {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.08) rotate(8deg);
+  }
+}
+.ai-cta > span:nth-child(2) {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+.ai-cta strong {
+  color: var(--text);
+  font-size: 16px;
+}
+.ai-cta small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.ai-cta:active {
+  transform: scale(0.99);
+}
+
+.pill-btn.ghost {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding-left: 10px;
+}
+
+.btn-secondary {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 15px;
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+}
+
+.ai-diet .panel > .field-label:first-child,
+.ai-diet .panel > .eyebrow:first-child {
+  margin-top: 0;
+}
+.ai-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+/* Os campos precisam poder encolher; sem isso a largura natural do input empurra a linha para fora da tela */
+.ai-numbers .field {
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+.ai-numbers .field-box {
+  padding: 0 12px;
+}
+.ai-numbers .field-box input {
+  width: 100%;
+}
+.ai-avoid .field-box {
+  padding: 0 14px;
+}
+.ai-note {
+  margin: 18px 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.water-hint.center {
+  text-align: center;
+}
+.ai-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.ai-note.top {
+  margin: -4px 4px 14px;
+}
+.ai-note.warn {
+  padding: 12px 14px;
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 14px;
+  background: rgba(255, 194, 61, 0.08);
+  border: 1px solid rgba(255, 194, 61, 0.25);
+  color: var(--text);
+}
+.ai-swap-btn {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ai-swap-btn:disabled {
+  opacity: 0.4;
+}
+.ai-swap {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+}
+.ai-swap .field-box {
+  padding: 0 14px;
+}
+.ai-swap-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 8px;
+}
+.ai-swap-actions button {
+  height: 48px;
+}
+.btn-primary.compact {
+  box-shadow: none;
+  font-size: 15px;
+}
+
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.macro-grid > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.panel .macro-grid .field-label {
+  margin-top: 0;
+}
+.macro-grid small {
+  font-size: 12px;
+}
+
+.ai-meal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ai-meal-head strong {
+  flex: 1 1 100%;
+  font-size: 17px;
+}
+.ai-items {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.ai-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+}
+.ai-items li .muted {
+  flex: none;
+}
+
+.ai-loading {
+  min-height: 70dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 0 12px;
+}
+.ai-loading strong {
+  font-size: 20px;
+}
+.ai-orb {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--yellow), var(--orange));
+  color: var(--ink);
+  box-shadow: var(--shadow-orange);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

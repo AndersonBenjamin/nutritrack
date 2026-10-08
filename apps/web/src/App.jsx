@@ -6,6 +6,7 @@ import Home from './screens/Home';
 import Plan from './screens/Plan';
 import Meds from './screens/Meds';
 import History from './screens/History';
+import AiDiet from './screens/AiDiet';
 import BottomNav from './components/BottomNav';
 
 export default function App() {
@@ -69,10 +70,11 @@ export default function App() {
   return (
     <div className="app-shell">
       {tab === 'home' && <Home user={user} onLogout={logout} {...nav} />}
-      {tab === 'plan' && <Plan onSaved={goHome} />}
+      {tab === 'plan' && <Plan onSaved={goHome} onOpenAiDiet={() => setTab('ai-diet')} />}
+      {tab === 'ai-diet' && <AiDiet onBack={() => setTab('plan')} onApplied={() => setTab('plan')} />}
       {tab === 'meds' && <Meds onSaved={goHome} />}
       {tab === 'history' && <History {...nav} />}
-      <BottomNav tab={tab} onChange={setTab} />
+      <BottomNav tab={tab === 'ai-diet' ? 'plan' : tab} onChange={setTab} />
     </div>
   );
 }

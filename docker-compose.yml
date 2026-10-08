@@ -18,6 +18,10 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # nginx do container + nginx do host
       TRUST_PROXY: ${TRUST_PROXY:-2}
+      # Dieta gerada por IA (vazio = recurso desligado)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AI_DIET_DAILY_LIMIT: ${AI_DIET_DAILY_LIMIT:-5}
+      AI_DIET_MOCK: ${AI_DIET_MOCK:-false}
     depends_on:
       db:
         condition: service_healthy

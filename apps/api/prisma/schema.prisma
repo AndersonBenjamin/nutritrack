@@ -18,11 +18,12 @@ model User {
   timezone     String   @default("America/Sao_Paulo")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  sessions   Session[]
-  routines   Routine[]
-  logs       RoutineLog[]
-  waterGoals WaterGoal[]
-  waterLogs  WaterLog[]
+  sessions        Session[]
+  routines        Routine[]
+  logs            RoutineLog[]
+  waterGoals      WaterGoal[]
+  waterLogs       WaterLog[]
+  dietGenerations DietGeneration[]
 
   @@map("users")
 }
@@ -98,8 +99,8 @@ model RoutineLog {
   time      String
   loggedAt  DateTime    @default(now()) @map("logged_at")
 
-  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  routine Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine Routine?         @relation(fields: [routineId], references: [id], onDelete: SetNull)
   items   RoutineLogItem[]
 
   @@unique([userId, routineId, date])
@@ -150,4 +151,23 @@ model WaterLog {
 
   @@index([userId, date])
   @@map("water_logs")
+}
+
+// Cada dieta gerada pela IA: guarda as respostas do formulário (para preencher de novo)
+// e o consumo de tokens (somando as trocas de refeição). Também serve para o limite diário de gerações por usuário.
+model DietGeneration {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  input        Json
+  model        String
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  // Trocas de refeição já feitas nesta dieta (limite em MAX_MEAL_SWAPS)
+  mealSwaps    Int      @default(0) @map("meal_swaps")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("diet_generations")
 }

@@ -7,6 +7,7 @@ import { prisma } from './db.js';
 import { env } from './env.js';
 import { requireAuth } from './lib/auth.js';
 import { HttpError } from './lib/errors.js';
+import { aiDietRoutes } from './routes/aiDiet.js';
 import { authRoutes } from './routes/auth.js';
 import { dayRoutes } from './routes/days.js';
 import { planRoutes } from './routes/plan.js';
@@ -52,6 +53,7 @@ export async function buildApp() {
         privateApi.addHook('preHandler', requireAuth);
         await privateApi.register(planRoutes);
         await privateApi.register(dayRoutes);
+        await privateApi.register(aiDietRoutes);
       });
     },
     { prefix: '/api' },

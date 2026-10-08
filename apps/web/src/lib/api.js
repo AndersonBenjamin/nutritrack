@@ -49,6 +49,10 @@ export const api = {
   waterGoal: () => request('GET', '/water-goal'),
   saveWaterGoal: (goal) => request('PUT', '/water-goal', goal),
 
+  aiDietStatus: () => request('GET', '/ai-diet'),
+  generateDiet: (profile) => request('POST', '/ai-diet/generate', profile),
+  swapMeal: (body) => request('POST', '/ai-diet/swap', body),
+
   day: (date) => request('GET', `/days/${date}`),
   history: (from, to) => request('GET', `/history?from=${from}&to=${to}`),
   createLog: (date, body) => request('POST', `/days/${date}/logs`, body),
