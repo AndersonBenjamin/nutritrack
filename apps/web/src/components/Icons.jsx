@@ -101,5 +101,6 @@ export const CalendarIcon = make(
   </>
 );
 export const ChevronLeftIcon = make(<path d="M14.5 6l-6 6 6 6" />);
+export const ChevronDownIcon = make(<path d="M6 9.5l6 6 6-6" />);
 export const ChevronRightIcon = make(<path d="M9.5 6l6 6-6 6" />);
 export const CloseIcon = make(<path d="M6 6l12 12M18 6L6 18" />);

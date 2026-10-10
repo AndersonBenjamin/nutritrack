@@ -24,6 +24,15 @@ export const GOALS = {
   gain: 'ganhar massa muscular',
 } as const;
 
+export const MAX_FAVORITE_FOODS = 10;
+
+/** "morango, abacate , ,patinho" -> ["morango", "abacate", "patinho"] */
+export const splitFoods = (text: string) =>
+  text
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
+
 export const dietProfileSchema = z.object({
   age: z.number().int().min(18, 'A geração de dieta é apenas para maiores de 18 anos.').max(100),
   sex: z.enum(['male', 'female']),
@@ -37,6 +46,13 @@ export const dietProfileSchema = z.object({
     .max(Object.keys(RESTRICTIONS).length)
     .default([]),
   avoidFoods: z.string().trim().max(200, 'Use no máximo 200 caracteres nos alimentos a evitar.').default(''),
+  // Preferências separadas por vírgula; a IA usa as saudáveis que couberem nas metas
+  favoriteFoods: z
+    .string()
+    .trim()
+    .max(200, 'Use no máximo 200 caracteres nos alimentos preferidos.')
+    .refine((v) => splitFoods(v).length <= MAX_FAVORITE_FOODS, `Informe no máximo ${MAX_FAVORITE_FOODS} alimentos preferidos.`)
+    .default(''),
   // Gestação, amamentação ou doenças que exigem dieta específica: encaminha para um profissional
   healthCondition: z.boolean(),
 });

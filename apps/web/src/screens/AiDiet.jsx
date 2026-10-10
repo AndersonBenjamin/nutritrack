@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { describeItem, fmt, sumBy } from '../lib/utils';
 import { Field } from '../components/AuthLayout';
-import { ChevronLeftIcon, CheckIcon, SparkIcon, FlameIcon, ClockIcon } from '../components/Icons';
+import { ChevronLeftIcon, ChevronDownIcon, CheckIcon, SparkIcon, FlameIcon, ClockIcon } from '../components/Icons';
 
 const SEXES = [
   ['female', 'Feminino'],
@@ -39,6 +39,7 @@ const emptyForm = {
   goal: '',
   mealsPerDay: 5,
   restrictions: [],
+  favoriteFoods: '',
   avoidFoods: '',
   healthCondition: null,
 };
@@ -49,11 +50,18 @@ const totalsOf = (meals) => {
   return Object.fromEntries(['kcal', 'proteinG', 'carbsG', 'fatG'].map((k) => [k, Math.round(sumBy(items, k))]));
 };
 
+const MAX_FAVORITE_FOODS = 10;
+const splitFoods = (text) =>
+  text
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
+
 const str = (v) => (v == null ? '' : String(v).replace('.', ','));
 const num = (v) => Number(String(v).trim().replace(',', '.'));
 
 /** Respostas salvas da última geração -> estado do formulário. */
-const toForm = (input) => ({ ...input, age: str(input.age), heightCm: str(input.heightCm), weightKg: str(input.weightKg) });
+const toForm = (input) => ({ ...emptyForm, ...input, age: str(input.age), heightCm: str(input.heightCm), weightKg: str(input.weightKg) });
 
 function toPayload(f) {
   if (!f.sex) throw new Error('Informe o sexo biológico.');
@@ -67,7 +75,9 @@ function toPayload(f) {
   if (!f.activity) throw new Error('Escolha seu nível de atividade física.');
   if (!f.goal) throw new Error('Escolha o objetivo da dieta.');
   if (f.healthCondition === null) throw new Error('Responda a pergunta sobre saúde.');
-  return { ...f, age, heightCm, weightKg, avoidFoods: f.avoidFoods.trim() };
+  const favorites = splitFoods(f.favoriteFoods);
+  if (favorites.length > MAX_FAVORITE_FOODS) throw new Error(`Informe no máximo ${MAX_FAVORITE_FOODS} alimentos preferidos.`);
+  return { ...f, age, heightCm, weightKg, favoriteFoods: favorites.join(', '), avoidFoods: f.avoidFoods.trim() };
 }
 
 function Chips({ options, value, onChange }) {
@@ -207,6 +217,17 @@ export default function AiDiet({ onBack, onApplied }) {
       <main className="screen ai-diet">
         {header('Sua dieta', 'Confira o cardápio antes de usar.', () => setStep('form'))}
 
+        <div className="ai-review" role="note">
+          <CheckIcon size={18} />
+          <p>
+            <strong>Sua dieta está pronta!</strong> Confira as refeições e role até o final da página para salvá-la no botão{' '}
+            <strong>“Usar esta dieta”</strong>.
+          </p>
+          <button className="link small" onClick={() => document.getElementById('ai-save')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+            Ir para o final <ChevronDownIcon size={14} />
+          </button>
+        </div>
+
         <section className="panel">
           <span className="eyebrow">Total do dia · meta</span>
           <strong className="big">
@@ -304,7 +325,7 @@ export default function AiDiet({ onBack, onApplied }) {
 
         {error && <p className="form-error">{error}</p>}
 
-        <div className="save-bar ai-actions">
+        <div className="save-bar ai-actions" id="ai-save">
           <button className="btn-primary" onClick={apply} disabled={busy}>
             <CheckIcon size={18} /> {saving ? 'Salvando…' : 'Usar esta dieta'}
           </button>
@@ -356,6 +377,20 @@ export default function AiDiet({ onBack, onApplied }) {
                   {label}
                 </button>
               ))}
+            </div>
+
+            <div className="ai-avoid">
+              <Field
+                label="Alimentos saudáveis que você mais gosta (opcional)"
+                placeholder="Ex.: morango, abacate, filé de frango, patinho, iogurte natural"
+                maxLength={200}
+                value={form.favoriteFoods}
+                onChange={(e) => set('favoriteFoods')(e.target.value)}
+              />
+              <p className={`water-hint ${splitFoods(form.favoriteFoods).length > MAX_FAVORITE_FOODS ? 'over' : ''}`}>
+                Separe por vírgula, até {MAX_FAVORITE_FOODS} alimentos ({splitFoods(form.favoriteFoods).length}/{MAX_FAVORITE_FOODS}). O assistente dá
+                preferência a eles quando couberem numa dieta saudável.
+              </p>
             </div>
 
             <div className="ai-avoid">
