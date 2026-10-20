@@ -365,6 +365,28 @@ p {
   font-size: 15px;
 }
 
+/* Botão do app-labs: é um link de verdade — quem navega é o servidor, que monta
+   a URL de autorização — mas tem a cara do botão primário. */
+.sso-link {
+  text-decoration: none;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
 /* ---------- Home ---------- */
 .topbar {
   display: flex;

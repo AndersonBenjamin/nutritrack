@@ -1,9 +1,11 @@
 services:
-  # Frontend estático + proxy de /api para a API, em http://localhost:8091
+  # Frontend estático + proxy de /api para a API.
+  # Sem `ports:` de propósito: quem publica na internet é o proxy (Traefik, no
+  # Coolify) e a porta fixa no host impediria duas stacks de subir juntas.
   web:
     build: ./apps/web
-    ports:
-      - "8091:80"
+    expose:
+      - "80"
     depends_on:
       api:
         condition: service_healthy
@@ -12,12 +14,22 @@ services:
   api:
     build: ./apps/api
     environment:
-      DATABASE_URL: postgresql://nutrio:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/nutrio
+      # `:-` e não `:?`: no Coolify o `docker compose build` interpola o compose
+      # com as variáveis de *build*, e um segredo de runtime não está lá — com
+      # `:?` o build morre antes de existir. Sem valor, é o Postgres que recusa
+      # subir, com mensagem clara.
+      DATABASE_URL: postgresql://nutrio:${POSTGRES_PASSWORD:-}@db:5432/nutrio
       NODE_ENV: production
       PORT: 3000
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # nginx do container + nginx do host
       TRUST_PROXY: ${TRUST_PROXY:-2}
+      # Login pelo app-labs (OIDC). Sem as três, o recurso fica desligado e o
+      # login por senha continua funcionando normalmente.
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
+      AUTH_LOCAL_ENABLED: ${AUTH_LOCAL_ENABLED:-true}
       # Dieta gerada por IA (vazio = recurso desligado)
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       AI_DIET_DAILY_LIMIT: ${AI_DIET_DAILY_LIMIT:-5}
@@ -38,7 +50,8 @@ services:
     environment:
       POSTGRES_DB: nutrio
       POSTGRES_USER: nutrio
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      # Mesmo motivo do `DATABASE_URL`: precisa sobreviver à interpolação de build.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

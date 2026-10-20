@@ -10,6 +10,7 @@ import { HttpError } from './lib/errors.js';
 import { aiDietRoutes } from './routes/aiDiet.js';
 import { authRoutes } from './routes/auth.js';
 import { dayRoutes } from './routes/days.js';
+import { oidcRoutes } from './routes/oidc.js';
 import { planRoutes } from './routes/plan.js';
 
 export async function buildApp() {
@@ -46,7 +47,15 @@ export async function buildApp() {
         return { ok: true };
       });
 
+      // O que a tela de login precisa saber para se desenhar. Público: não há
+      // nada aqui que não possa ser visto por qualquer pessoa.
+      api.get('/config', async () => ({
+        oidcEnabled: env.OIDC_ENABLED,
+        localEnabled: env.AUTH_LOCAL_ENABLED,
+      }));
+
       await api.register(authRoutes);
+      await api.register(oidcRoutes);
 
       // Tudo daqui para baixo exige sessão; as consultas sempre filtram por request.user.id
       await api.register(async (privateApi) => {

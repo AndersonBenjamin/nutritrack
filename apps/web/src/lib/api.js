@@ -38,6 +38,9 @@ async function request(method, path, body) {
 const timezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export const api = {
+  // O que a tela de login precisa saber: se o SSO está ligado e se o login por
+  // senha continua disponível. Público, sem sessão.
+  config: () => request('GET', '/config'),
   me: () => request('GET', '/auth/me'),
   login: (email, password) => request('POST', '/auth/login', { email, password }),
   register: ({ name, email, password }) => request('POST', '/auth/register', { name, email, password, timezone: timezone() }),

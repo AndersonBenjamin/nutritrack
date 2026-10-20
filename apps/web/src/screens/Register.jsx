@@ -1,12 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AuthLayout, { Field } from '../components/AuthLayout';
 import { MailIcon, LockIcon, UserIcon, ArrowIcon } from '../components/Icons';
+import { api } from '../lib/api';
+
+// Mesmo caminho do login: a conta é criada no primeiro retorno do app-labs.
+const ssoHref = () => {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return `/api/auth/oidc/start?tz=${encodeURIComponent(tz)}`;
+};
 
 export default function Register({ onRegister, onGoLogin }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [config, setConfig] = useState(null);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  useEffect(() => {
+    api
+      .config()
+      .then(setConfig)
+      .catch(() => setConfig({ oidcEnabled: false }));
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
@@ -37,6 +52,15 @@ export default function Register({ onRegister, onGoLogin }) {
         </>
       }
     >
+      {config?.oidcEnabled && (
+        <>
+          <a className="btn-primary sso-link" href={ssoHref()}>
+            Criar conta com app-labs
+          </a>
+          <p className="auth-divider">ou</p>
+        </>
+      )}
+
       <form className="form" onSubmit={submit} noValidate>
         <Field icon={UserIcon} label="Nome" autoComplete="name" placeholder="Seu nome" value={form.name} onChange={set('name')} />
         <Field icon={MailIcon} label="E-mail" type="email" autoComplete="email" placeholder="voce@email.com" value={form.email} onChange={set('email')} />
