@@ -14,7 +14,11 @@ services:
   api:
     build: ./apps/api
     environment:
-      DATABASE_URL: postgresql://nutrio:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/nutrio
+      # `:-` e não `:?`: no Coolify o `docker compose build` interpola o compose
+      # com as variáveis de *build*, e um segredo de runtime não está lá — com
+      # `:?` o build morre antes de existir. Sem valor, é o Postgres que recusa
+      # subir, com mensagem clara.
+      DATABASE_URL: postgresql://nutrio:${POSTGRES_PASSWORD:-}@db:5432/nutrio
       NODE_ENV: production
       PORT: 3000
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
@@ -46,7 +50,8 @@ services:
     environment:
       POSTGRES_DB: nutrio
       POSTGRES_USER: nutrio
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      # Mesmo motivo do `DATABASE_URL`: precisa sobreviver à interpolação de build.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
