@@ -22,6 +22,27 @@ navegador ──► nginx (web) ──/api──► api (Fastify) ──► Post
 - **Água:** cada copo é um registro (`water_logs`). A meta tem histórico (`water_goals`), então dias antigos comparam com a meta da época.
 - **Remédios/vitaminas:** funcionam como as refeições: um horário com itens (nome + quantidade). No dia, basta marcar como tomado.
 
+## Login pelo app-labs (SSO)
+
+O app pode delegar a tela de senha ao [app-labs](https://hub.nutalk.com.br), por OIDC
+(Authorization Code + PKCE, cliente público — sem secret). **A sessão continua sendo do
+Nutrio:** depois do retorno, o usuário local é encontrado ou criado por `external_id = sub`
+e o cookie `nutrio_session` é emitido como sempre. O que muda é só como a pessoa provou
+quem é.
+
+Variáveis — as três de OIDC precisam existir juntas; com todas vazias o recurso fica
+desligado e o login por senha segue igual (é o rollback):
+
+| Variável | Exemplo |
+|---|---|
+| `OIDC_ISSUER` | `https://hub.nutalk.com.br` |
+| `OIDC_CLIENT_ID` | id do cliente criado no hub |
+| `OIDC_REDIRECT_URI` | `https://nutrio.nutalk.com.br/api/auth/oidc/callback` |
+| `AUTH_LOCAL_ENABLED` | `true` mantém o login por senha; `false` deixa só o SSO |
+
+O vínculo é sempre pelo `sub`, nunca pelo e-mail (e-mail muda, `sub` não). Quem entra por
+SSO não tem senha local — `password_hash` fica nulo.
+
 ## Desenvolvimento
 
 Requisitos: Node 22+ e Docker.
@@ -52,7 +73,10 @@ cp .env.example .env       # defina POSTGRES_PASSWORD
 docker compose up -d --build --remove-orphans
 ```
 
-O app fica em http://localhost:8091. A API aplica as migrações pendentes sozinha ao subir. Como o cookie de sessão é `Secure`, o acesso precisa ser por HTTPS (na VPS, o nginx do host com certbot). Para testar localmente via http, use `COOKIE_SECURE=false` no `.env`.
+O `web` **expõe** a porta 80 na rede interna, sem publicá-la no host: quem publica é o
+proxy reverso (Traefik, no Coolify). Para testar o compose localmente, crie um
+`docker-compose.override.yml` com `ports: ["8091:80"]`. A API aplica as migrações
+pendentes sozinha ao subir. Como o cookie de sessão é `Secure`, o acesso precisa ser por HTTPS (na VPS, o nginx do host com certbot). Para testar localmente via http, use `COOKIE_SECURE=false` no `.env`.
 
 Backup do banco:
 

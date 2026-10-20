@@ -1,12 +1,11 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../db.js';
+import { env } from '../env.js';
 import { createSession, destroySession, dummyVerify, hashPassword, requireAuth, verifyPassword } from '../lib/auth.js';
-import { isValidTimezone, toDbDate, todayIn } from '../lib/dates.js';
+import { isValidTimezone } from '../lib/dates.js';
 import { HttpError } from '../lib/errors.js';
-import { DEFAULT_WATER } from '../services/days.js';
-import { defaultMeals } from '../services/routines.js';
-import { itemData } from '../services/serialize.js';
+import { createUserWithDefaults } from '../services/users.js';
 
 const email = z.string().trim().toLowerCase().pipe(z.email('Informe um e-mail válido.').max(254));
 
@@ -31,30 +30,20 @@ const authRateLimit = { rateLimit: { max: 10, timeWindow: '1 minute' } };
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
   app.post('/auth/register', { config: authRateLimit }, async (request, reply) => {
+    if (!env.AUTH_LOCAL_ENABLED) {
+      throw new HttpError(403, 'O cadastro por senha está desligado. Entre pelo app-labs.');
+    }
+
     const body = registerBody.parse(request.body);
     if (await prisma.user.findUnique({ where: { email: body.email } })) {
       throw new HttpError(409, 'Já existe uma conta com esse e-mail.');
     }
 
-    const timezone = body.timezone ?? 'America/Sao_Paulo';
-    const today = toDbDate(todayIn(timezone));
-    const user = await prisma.user.create({
-      data: {
-        name: body.name,
-        email: body.email,
-        passwordHash: await hashPassword(body.password),
-        timezone,
-        waterGoals: { create: { ...DEFAULT_WATER, effectiveFrom: today } },
-        routines: {
-          create: defaultMeals().map((m) => ({
-            kind: 'MEAL' as const,
-            name: m.name,
-            time: m.time,
-            activeFrom: today,
-            items: { create: m.items.map(itemData) },
-          })),
-        },
-      },
+    const user = await createUserWithDefaults({
+      name: body.name,
+      email: body.email,
+      passwordHash: await hashPassword(body.password),
+      timezone: body.timezone ?? 'America/Sao_Paulo',
     });
 
     await createSession(reply, user.id);
@@ -62,11 +51,20 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post('/auth/login', { config: authRateLimit }, async (request, reply) => {
+    if (!env.AUTH_LOCAL_ENABLED) {
+      throw new HttpError(403, 'O login por senha está desligado. Entre pelo app-labs.');
+    }
+
     const body = loginBody.parse(request.body);
     const user = await prisma.user.findUnique({ where: { email: body.email } });
     if (!user) {
       await dummyVerify(body.password);
       throw new HttpError(401, 'E-mail ou senha incorretos.');
+    }
+    if (!user.passwordHash) {
+      // Conta criada pelo app-labs: não existe senha local para conferir.
+      await dummyVerify(body.password);
+      throw new HttpError(401, 'Esta conta entra pelo app-labs. Use o botão "Entrar com app-labs".');
     }
     if (!(await verifyPassword(user.passwordHash, body.password))) throw new HttpError(401, 'E-mail ou senha incorretos.');
 

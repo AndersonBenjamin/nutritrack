@@ -1,9 +1,11 @@
 services:
-  # Frontend estático + proxy de /api para a API, em http://localhost:8091
+  # Frontend estático + proxy de /api para a API.
+  # Sem `ports:` de propósito: quem publica na internet é o proxy (Traefik, no
+  # Coolify) e a porta fixa no host impediria duas stacks de subir juntas.
   web:
     build: ./apps/web
-    ports:
-      - "8091:80"
+    expose:
+      - "80"
     depends_on:
       api:
         condition: service_healthy
@@ -18,6 +20,12 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # nginx do container + nginx do host
       TRUST_PROXY: ${TRUST_PROXY:-2}
+      # Login pelo app-labs (OIDC). Sem as três, o recurso fica desligado e o
+      # login por senha continua funcionando normalmente.
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
+      AUTH_LOCAL_ENABLED: ${AUTH_LOCAL_ENABLED:-true}
       # Dieta gerada por IA (vazio = recurso desligado)
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       AI_DIET_DAILY_LIMIT: ${AI_DIET_DAILY_LIMIT:-5}
